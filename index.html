@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" href="Images/icon.png">
+    <title>ALJ Insight</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <style>
+        #result {
+            overflow-y: auto;
+            height: 200px;
+            max-height: 200px;
+            width: 100%;
+            background: black;
+            color: white;
+            box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+            border-radius: 5px;
+        }
+        #mainContainer{
+            border-radius: 10px;
+            padding: 15px 30px;
+            box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+        }
+        .form-control:focus{
+            box-shadow: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container my-5" id="mainContainer">
+        <div class="text-center">
+            <img src="Images/download.png" width="150" height="150" alt="ALJ" class="img-thumbnail">
+        </div>
+        <div class="row">
+            <div class="col-2">
+                <label for="monthDropdown"><small><strong>Select Month</strong></small></label>
+                <select id="monthDropdown" class="form-control">
+                    <option value="0"><strong>Select month</strong></option>
+                </select>
+            </div>
+            <div class="col-10" >
+                <a href="https://docs.google.com/spreadsheets/d/1boqPmCovBu2dMT8j6VslZ7Vs4Bv8MSWy-4oLf5KGTGk/edit#gid=0" class="btn btn-sm btn-success" target="_blank" style="float: right;">Go To Sheet</a>
+            </div>
+        </div>
+        <div id="main" class="my-2">
+
+        </div>
+
+        <textarea id="result" class="px-2 py-2 my-3">Output here...</textarea>
+        <footer class="text-center">
+            <p>&copy; ALJ Insight 2022</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        var baseURL = "http://192.168.0.211:8081"
+
+        $(document).ready(() => {
+            monthDropdown()
+            let mainDiv = document.getElementById("main")
+            fetch(`${baseURL}/getallendpoints`)
+                .then(response => response.json())
+                .then(json => {
+                    for (let item = 0; item < json.endpoints.length; item++) {
+                        const spacedStr = json.endpoints[item].Key.replace(/[A-Z]/g, ' $&').trim();
+                        mainDiv.innerHTML += `<input type="button" class="btn btn-sm btn-outline-primary me-1 my-1" id="${json.endpoints[item].Key}" title="${json.endpoints[item].Value}" value="${spacedStr}" onclick="getResult(this.id)">`
+                    }
+                })
+
+        })
+
+        const getResult = (val) => {
+            let monthDropdown = document.getElementById("monthDropdown").value
+            if (monthDropdown === "0") return alert("Please select the month")
+            fetch(`${baseURL}/${val}/${monthDropdown}`)
+                .then(response => response.json())
+                .then(json => {
+                    document.getElementById("result").value = JSON.stringify(json, undefined, 4);
+                })
+        }
+
+        const monthDropdown = () => {
+            var month = [
+                { Key: 1, Value: "January" },
+                { Key: 2, Value: "February" },
+                { Key: 3, Value: "March" },
+                { Key: 4, Value: "April" },
+                { Key: 5, Value: "May" },
+                { Key: 6, Value: "June" },
+                { Key: 7, Value: "July" },
+                { Key: 8, Value: "August" },
+                { Key: 9, Value: "September" },
+                { Key: 10, Value: "October" },
+                { Key: 11, Value: "November" },
+                { Key: 12, Value: "December" },
+            ];
+            let monthDropdown = document.getElementById("monthDropdown")
+            for (let item = 0; item < month.length; item++) {
+                monthDropdown.innerHTML += `<option value="${month[item].Key}">${month[item].Value}</option>`
+            }
+            const d = new Date();
+            let currentMonth = d.getMonth().toString();
+            document.getElementById("monthDropdown").value = currentMonth
+        }
+    </script>
+</body>
+
+</html>
